@@ -21,8 +21,10 @@ def get_leaderboard_df_cached():
 def get_gotchis_df_cached(gotchi_ids):
     return get_gotchis_df(gotchi_ids)
 
-def get_data():
+def get_data(solo_only=False):
     leaderboard_df = get_leaderboard_df_cached()
+    if solo_only:
+        leaderboard_df = leaderboard_df.query('formation.str.lower() == "solo"').copy()
     trait_scores_df = get_trait_scores_df(leaderboard_df, \
         get_gotchi_traits_df(get_gotchis_df_cached(leaderboard_df.head(1000).index.tolist())))
     return leaderboard_df, trait_scores_df
@@ -34,9 +36,10 @@ def bin_xticks(g: sns.FacetGrid, nbins=5):
 
 def main():
 
-    leaderboard_df, trait_scores_df = get_data()
-    
     st.title('Gotchi Crawler Leaderboard Analytics')
+
+    leaderboard_df, trait_scores_df = get_data(st.checkbox(label='Include solo runs only', value=False))
+    
     st.header('Current Leaderboard')
     st.markdown('Data delayed by up to 5 minutes.')
     st.dataframe(leaderboard_df)
